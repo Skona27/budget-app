@@ -2,13 +2,13 @@
 var budgetController = (function () {
 
     // function constructor to create expenses
-    var Expense = function(id, description, value) {
+    var Expense = function (id, description, value) {
         this.id = id;
         this.description = description;
         this.value = value;
     };
 
-    var Income = function(id, description, value) {
+    var Income = function (id, description, value) {
         this.id = id;
         this.description = description;
         this.value = value;
@@ -26,22 +26,22 @@ var budgetController = (function () {
     };
 
     return {
-        addItem: function(type, description, value) {
+        addItem: function (type, description, value) {
             var newItem;
             var ID;
 
             // generate unique id
-            if(data.allItems[type].length > 0) {
+            if (data.allItems[type].length > 0) {
                 // check the last id and increment
-               ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+                ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
             } else {
                 ID = 1;
             }
 
             // create exp or inc objects
-            if(type === 'exp') {
+            if (type === 'exp') {
                 newItem = new Expense(ID, description, value);
-            } else if(type === 'inc') {
+            } else if (type === 'inc') {
                 newItem = new Income(ID, description, value);
             }
 
@@ -49,7 +49,7 @@ var budgetController = (function () {
             data.allItems[type].push(newItem);
             return newItem;
         },
-        test: function() {
+        test: function () {
             console.log(data.allItems);
         }
     }
@@ -86,10 +86,11 @@ var UIController = (function () {
             return {
                 type: DOM.inputType.value,
                 description: DOM.inputDesc.value,
-                value: DOM.inputValue.value,
+                value: parseFloat(DOM.inputValue.value),
             };
         },
-        addListItem: function(obj, type) {
+
+        addListItem: function (obj, type) {
             var html, id, description, value;
             var element;
 
@@ -99,22 +100,31 @@ var UIController = (function () {
             value = obj.value;
 
             // define html structure with item data
-            if(type === 'inc') {
+            if (type === 'inc') {
                 // choose element list
                 element = DOM.incomeList;
 
                 // html income string
-                html = '<div class="item clearfix" id="income-'+id+'"><div class="item__description">'+description+'</div><div class="right clearfix"><div class="item__value">+ '+value+'</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
-            } else if(type === 'exp') {
+                html = '<div class="item clearfix" id="income-' + id + '"><div class="item__description">' + description + '</div><div class="right clearfix"><div class="item__value">+ ' + value + '</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+            } else if (type === 'exp') {
                 element = DOM.expenseList;
 
                 // html exp string
-                html = '<div class="item clearfix" id="expense-'+id+'"><div class="item__description">'+description+'</div><div class="right clearfix"><div class="item__value">- '+value+'</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="expense-' + id + '"><div class="item__description">' + description + '</div><div class="right clearfix"><div class="item__value">- ' + value + '</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
             }
 
             // update the UI
             element.insertAdjacentHTML('beforeend', html);
         },
+
+        clearInputs: function () {
+            // clear input values
+            DOM.inputDesc.value = "";
+            DOM.inputValue.value = "";
+
+            // focus first input
+            DOM.inputDesc.focus();
+        }
     };
 })();
 
@@ -151,20 +161,27 @@ var controller = (function (budgetCtrl, UICtrl) {
         // get the input
         var input = UICtrl.getInput();
 
-        // add the item to the budget controller
-        var newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+        // check if empty
+        if (input.description !== "" && !isNaN(input.value) && parseFloat(input.value) > 0) {
 
-        // update the ui
-        UICtrl.addListItem(newItem, input.type);
+            // add the item to the budget controller
+            var newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
-        // calculate budget
+            // update the ui
+            UICtrl.addListItem(newItem, input.type);
 
-        // display budget on the ui
+            // clear inputs
+            UICtrl.clearInputs();
+
+            // calculate budget
+
+            // display budget on the ui
+        }
     };
 
     return {
         // public initialization function
-        init: function() { setupListeners(); },
+        init: function () { setupListeners(); },
     };
 
 })(budgetController, UIController);
